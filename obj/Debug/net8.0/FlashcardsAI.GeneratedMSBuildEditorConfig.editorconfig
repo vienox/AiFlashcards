@@ -45,11 +45,3 @@ build_metadata.AdditionalFiles.CssScope =
 [C:/Users/niewi/OneDrive - Office 365/Pulpit/Projects/Aifishcards/FlashcardsAI/Components/_Imports.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/niewi/OneDrive - Office 365/Pulpit/Projects/Aifishcards/FlashcardsAI/Components/Layout/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = b-h2p93n244g
-
-[C:/Users/niewi/OneDrive - Office 365/Pulpit/Projects/Aifishcards/FlashcardsAI/Components/Layout/NavMenu.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTmF2TWVudS5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = b-qrzknqqwi9
