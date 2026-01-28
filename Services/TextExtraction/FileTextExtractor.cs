@@ -12,7 +12,7 @@ public sealed class FileTextExtractor : ITextExtractor
     {
         if (file is null)
         {
-            return new TextExtractionResult(string.Empty, "Nie wybrano pliku.");
+            return new TextExtractionResult(string.Empty, "No file selected.");
         }
 
         var extension = Path.GetExtension(file.Name).ToLowerInvariant();
@@ -23,16 +23,16 @@ public sealed class FileTextExtractor : ITextExtractor
             {
                 ".txt" or ".md" or ".csv" => new TextExtractionResult(await ReadTextAsync(file, ct), null),
                 ".pdf" => new TextExtractionResult(await ReadPdfAsync(file, ct), null),
-                _ => new TextExtractionResult(string.Empty, "Obslugiwane pliki: PDF, TXT, MD, CSV.")
+                _ => new TextExtractionResult(string.Empty, "Supported files: PDF, TXT, MD, CSV.")
             };
         }
         catch (IOException ex)
         {
-            return new TextExtractionResult(string.Empty, $"Nie udalo sie wczytac pliku: {ex.Message}");
+            return new TextExtractionResult(string.Empty, $"Unable to read file: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new TextExtractionResult(string.Empty, $"Blad podczas przetwarzania: {ex.Message}");
+            return new TextExtractionResult(string.Empty, $"Processing error: {ex.Message}");
         }
     }
 

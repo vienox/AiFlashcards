@@ -5,38 +5,38 @@
 @inject IAiFlashcardGenerator AiGenerator
 @inject ITextExtractor TextExtractor
 
-<PageTitle>AI Fiszki</PageTitle>
+<PageTitle>AI Flashcards</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="page-shell">
     <MudGrid Class="hero-grid" Spacing="4">
         <MudItem xs="12" md="6">
             <MudPaper Class="hero-copy" Elevation="0">
-                <MudChip Color="Color.Secondary" Variant="Variant.Outlined" Class="badge-chip">AI FISZKI</MudChip>
-                <MudText Typo="Typo.h2">AI fiszki z Twoich materialow</MudText>
+                <MudChip Color="Color.Secondary" Variant="Variant.Outlined" Class="badge-chip">AI FLASHCARDS</MudChip>
+                <MudText Typo="Typo.h2">AI flashcards from your materials</MudText>
                 <MudText Typo="Typo.body1" Class="hero-lead">
-                    Wklej tekst, wrzuc PDF lub TXT i generuj fiszki w kilka sekund.
-                    Dla teraz dziala tryb demo, zeby sprawdzic czy wszystko dziala.
+                    Paste text, drop in a PDF or TXT, and generate flashcards in seconds.
+                    For now demo mode is enabled so you can check that everything works.
                 </MudText>
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="demo-alert">
-                    <b>Tryb demo:</b> Generator testowy tworzy fiszki z podanego tekstu.
+                    <b>Demo mode:</b> The test generator builds flashcards from the provided text.
                 </MudAlert>
             </MudPaper>
         </MudItem>
         <MudItem xs="12" md="6">
             <MudPaper Class="panel" Elevation="6">
-                <MudText Typo="Typo.h6">Zrodlo</MudText>
+                <MudText Typo="Typo.h6">Source</MudText>
                 <MudSelect T="InputModeKind"
-                           Label="Tryb"
+                           Label="Mode"
                            @bind-Value="InputMode"
                            Variant="Variant.Outlined"
                            Class="field-gap">
-                    <MudSelectItem Value="InputModeKind.Text">Tekst</MudSelectItem>
-                    <MudSelectItem Value="InputModeKind.File">Plik</MudSelectItem>
+                    <MudSelectItem Value="InputModeKind.Text">Text</MudSelectItem>
+                    <MudSelectItem Value="InputModeKind.File">File</MudSelectItem>
                 </MudSelect>
 
                 @if (InputMode == InputModeKind.Text)
                 {
-                    <MudTextField Label="Wklej tekst"
+                    <MudTextField Label="Paste text"
                                   @bind-Value="SourceText"
                                   Lines="7"
                                   TextArea="true"
@@ -45,7 +45,7 @@
                 else
                 {
                     <MudText Typo="Typo.subtitle2" Class="field-gap">
-                        Wybierz plik (PDF, TXT, MD, CSV)
+                        Choose a file (PDF, TXT, MD, CSV)
                     </MudText>
                     <InputFile OnChange="OnFileSelected"
                                accept=".pdf,.txt,.md,.csv"
@@ -54,20 +54,20 @@
                 }
 
                 <div class="count-row">
-                    <MudText Typo="Typo.subtitle2">Ile fiszek</MudText>
+                    <MudText Typo="Typo.subtitle2">Number of cards</MudText>
                     <MudSlider @bind-Value="CardCount" Min="4" Max="24" Step="1" Color="Color.Secondary" />
                     <MudText Typo="Typo.subtitle2" Class="count-value">@CardCount</MudText>
                 </div>
 
                 <div class="action-row">
                     <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GenerateAsync" Disabled="@IsBusy">
-                        @(IsBusy ? "Generuje..." : "Generuj fiszki")
+                        @(IsBusy ? "Generating..." : "Generate flashcards")
                     </MudButton>
                     <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="TryDemoAsync" Disabled="@IsBusy">
-                        Sprawdz dzialanie
+                        Check it works
                     </MudButton>
                     <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="ClearAll" Disabled="@IsBusy">
-                        Wyczysc
+                        Clear
                     </MudButton>
                 </div>
 
@@ -90,8 +90,8 @@
     <MudDivider Class="section-divider" />
 
     <div class="results-head">
-        <MudText Typo="Typo.h5">Wynik</MudText>
-        <MudText Typo="Typo.caption" Class="muted">Twoje wygenerowane fiszki</MudText>
+        <MudText Typo="Typo.h5">Results</MudText>
+        <MudText Typo="Typo.caption" Class="muted">Your generated flashcards</MudText>
     </div>
 
     @if (IsBusy)
@@ -101,7 +101,7 @@
     else if (Cards.Count == 0)
     {
         <MudPaper Class="placeholder" Elevation="0">
-            Tutaj pojawia sie fiszki po wygenerowaniu.
+            Your flashcards will appear here after generation.
         </MudPaper>
     }
     else
@@ -156,7 +156,7 @@
 
     private string FileLabel =>
         SelectedFile is null
-            ? "Nie wybrano pliku."
+            ? "No file selected."
             : $"{SelectedFile.Name} ({FormatBytes(SelectedFile.Size)})";
 
     private async Task OnFileSelected(InputFileChangeEventArgs e)
@@ -197,8 +197,8 @@
                 if (string.IsNullOrWhiteSpace(ErrorMessage))
                 {
                     ErrorMessage = InputMode == InputModeKind.Text
-                        ? "Wklej tekst, aby wygenerowac fiszki."
-                        : "Wybierz plik z tekstem.";
+                        ? "Paste some text to generate flashcards."
+                        : "Select a text file.";
                 }
 
                 return;
@@ -208,11 +208,11 @@
             var result = await AiGenerator.GenerateAsync(text, options);
             _cards.Clear();
             _cards.AddRange(result);
-            InfoMessage = $"Wygenerowano {Cards.Count} fiszek (tryb demo).";
+            InfoMessage = $"Generated {Cards.Count} flashcards (demo mode).";
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Nie udalo sie wygenerowac fiszek: {ex.Message}";
+            ErrorMessage = $"Unable to generate flashcards: {ex.Message}";
         }
         finally
         {
@@ -224,7 +224,7 @@
     {
         if (SelectedFile is null)
         {
-            ErrorMessage = "Nie wybrano pliku.";
+            ErrorMessage = "No file selected.";
             return string.Empty;
         }
 
