@@ -1,7 +1,256 @@
-﻿@page "/"
+@page "/"
+@using FlashcardsAI.Models
+@using FlashcardsAI.Services.Ai
+@using FlashcardsAI.Services.TextExtraction
+@inject IAiFlashcardGenerator AiGenerator
+@inject ITextExtractor TextExtractor
 
-<PageTitle>Home</PageTitle>
+<PageTitle>AI Fiszki</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="hero">
+    <div class="hero__copy">
+        <div class="badge">AI FISZKI</div>
+        <h1>AI fiszki z Twoich materialow</h1>
+        <p class="lead">
+            Wklej tekst, wrzuc PDF lub TXT i generuj fiszki w kilka sekund.
+            Dla teraz dziala tryb demo, zeby sprawdzic czy wszystko dziala.
+        </p>
+        <div class="hero__note">
+            <span class="pill">Tryb demo</span>
+            <span>Generator testowy tworzy fiszki z podanego tekstu.</span>
+        </div>
+    </div>
 
-Welcome to your new app.
+    <div class="hero__panel">
+        <div class="panel">
+            <div class="panel__header">
+                <h2>Zrodlo</h2>
+                <span class="muted">Tekst lub plik</span>
+            </div>
+
+            <div class="toggle">
+                <button class="toggle__btn @(InputMode == InputModeKind.Text ? "is-active" : "")"
+                        @onclick="() => SwitchMode(InputModeKind.Text)">
+                    Tekst
+                </button>
+                <button class="toggle__btn @(InputMode == InputModeKind.File ? "is-active" : "")"
+                        @onclick="() => SwitchMode(InputModeKind.File)">
+                    Plik
+                </button>
+            </div>
+
+            @if (InputMode == InputModeKind.Text)
+            {
+                <label class="field-label" for="sourceText">Wklej tekst</label>
+                <textarea id="sourceText"
+                          class="field-textarea"
+                          placeholder="Wklej notatki lub fragment materialu..."
+                          @bind="SourceText"></textarea>
+            }
+            else
+            {
+                <label class="field-label" for="sourceFile">Wybierz plik (PDF, TXT, MD, CSV)</label>
+                <InputFile id="sourceFile"
+                           class="field-file"
+                           OnChange="OnFileSelected"
+                           accept=".pdf,.txt,.md,.csv" />
+                <div class="file-meta">@FileLabel</div>
+            }
+
+            <div class="options">
+                <div class="options__label">Ile fiszek</div>
+                <input class="options__range" type="range" min="4" max="24" step="1" @bind="CardCount" />
+                <div class="options__value">@CardCount</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" @onclick="GenerateAsync" disabled="@IsBusy">
+                    @(IsBusy ? "Generuje..." : "Generuj fiszki")
+                </button>
+                <button class="btn btn-ghost" @onclick="TryDemoAsync" disabled="@IsBusy">
+                    Sprawdz dzialanie
+                </button>
+                <button class="btn btn-link" @onclick="ClearAll" disabled="@IsBusy">
+                    Wyczysc
+                </button>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+            {
+                <div class="notice notice--error">@ErrorMessage</div>
+            }
+            @if (!string.IsNullOrWhiteSpace(InfoMessage))
+            {
+                <div class="notice notice--info">@InfoMessage</div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="results">
+    <div class="results__header">
+        <h2>Wynik</h2>
+        <span class="muted">Twoje wygenerowane fiszki</span>
+    </div>
+
+    @if (IsBusy)
+    {
+        <div class="placeholder-card">Przetwarzam material...</div>
+    }
+    else if (Cards.Count == 0)
+    {
+        <div class="placeholder-card">Tutaj pojawia sie fiszki po wygenerowaniu.</div>
+    }
+    else
+    {
+        <div class="cards-grid">
+            @foreach (var card in Cards)
+            {
+                <div class="flashcard">
+                    <div class="flashcard__front">@card.Front</div>
+                    <div class="flashcard__back">@card.Back</div>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private const string DemoText = "Photosynthesis converts light into chemical energy. " +
+        "Chlorophyll absorbs light in the chloroplasts. " +
+        "Glucose is produced and oxygen is released. " +
+        "ATP powers cellular work.";
+
+    private readonly List<Flashcard> _cards = new();
+
+    private string SourceText { get; set; } = string.Empty;
+    private IBrowserFile? SelectedFile { get; set; }
+    private int CardCount { get; set; } = 8;
+    private bool IsBusy { get; set; }
+    private string? ErrorMessage { get; set; }
+    private string? InfoMessage { get; set; }
+    private InputModeKind InputMode { get; set; } = InputModeKind.Text;
+
+    private IReadOnlyList<Flashcard> Cards => _cards;
+
+    private string FileLabel =>
+        SelectedFile is null
+            ? "Nie wybrano pliku."
+            : $"{SelectedFile.Name} ({FormatBytes(SelectedFile.Size)})";
+
+    private void SwitchMode(InputModeKind mode)
+    {
+        InputMode = mode;
+        ErrorMessage = null;
+        InfoMessage = null;
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        SelectedFile = e.File;
+        InputMode = InputModeKind.File;
+        ErrorMessage = null;
+        InfoMessage = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TryDemoAsync()
+    {
+        SourceText = DemoText;
+        InputMode = InputModeKind.Text;
+        await GenerateAsync();
+    }
+
+    private async Task GenerateAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        IsBusy = true;
+        ErrorMessage = null;
+        InfoMessage = null;
+
+        try
+        {
+            var text = InputMode == InputModeKind.Text
+                ? SourceText
+                : await ExtractFromFileAsync();
+
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                if (string.IsNullOrWhiteSpace(ErrorMessage))
+                {
+                    ErrorMessage = InputMode == InputModeKind.Text
+                        ? "Wklej tekst, aby wygenerowac fiszki."
+                        : "Wybierz plik z tekstem.";
+                }
+
+                return;
+            }
+
+            var options = new GenerateOptions { Count = CardCount };
+            var result = await AiGenerator.GenerateAsync(text, options);
+            _cards.Clear();
+            _cards.AddRange(result);
+            InfoMessage = $"Wygenerowano {Cards.Count} fiszek (tryb demo).";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Nie udalo sie wygenerowac fiszek: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private async Task<string> ExtractFromFileAsync()
+    {
+        if (SelectedFile is null)
+        {
+            ErrorMessage = "Nie wybrano pliku.";
+            return string.Empty;
+        }
+
+        var result = await TextExtractor.ExtractAsync(SelectedFile);
+        if (!string.IsNullOrWhiteSpace(result.ErrorMessage))
+        {
+            ErrorMessage = result.ErrorMessage;
+        }
+
+        return result.Text;
+    }
+
+    private void ClearAll()
+    {
+        SourceText = string.Empty;
+        SelectedFile = null;
+        _cards.Clear();
+        ErrorMessage = null;
+        InfoMessage = null;
+        InputMode = InputModeKind.Text;
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024)
+        {
+            return $"{bytes} B";
+        }
+
+        if (bytes < 1024 * 1024)
+        {
+            return $"{bytes / 1024d:0.0} KB";
+        }
+
+        return $"{bytes / (1024d * 1024d):0.0} MB";
+    }
+
+    private enum InputModeKind
+    {
+        Text,
+        File
+    }
+}

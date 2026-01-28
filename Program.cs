@@ -1,10 +1,14 @@
 using FlashcardsAI.Components;
+using FlashcardsAI.Services.Ai;
+using FlashcardsAI.Services.TextExtraction;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddScoped<IAiFlashcardGenerator, FakeAiFlashcardGenerator>();
+builder.Services.AddScoped<ITextExtractor, FileTextExtractor>();
 
 var app = builder.Build();
 
