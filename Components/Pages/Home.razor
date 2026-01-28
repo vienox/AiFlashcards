@@ -11,7 +11,9 @@
     <MudGrid Class="hero-grid" Spacing="4">
         <MudItem xs="12" md="6">
             <MudPaper Class="hero-copy" Elevation="0">
-                <MudChip Color="Color.Secondary" Variant="Variant.Outlined" Class="badge-chip">AI FLASHCARDS</MudChip>
+                <MudChip T="string" Color="Color.Secondary" Variant="Variant.Outlined" Class="badge-chip">
+                    AI FLASHCARDS
+                </MudChip>
                 <MudText Typo="Typo.h2">AI flashcards from your materials</MudText>
                 <MudText Typo="Typo.body1" Class="hero-lead">
                     Paste text, drop in a PDF or TXT, and generate flashcards in seconds.
@@ -39,7 +41,6 @@
                     <MudTextField Label="Paste text"
                                   @bind-Value="SourceText"
                                   Lines="7"
-                                  TextArea="true"
                                   Variant="Variant.Outlined" />
                 }
                 else
