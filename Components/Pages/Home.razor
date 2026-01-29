@@ -2,9 +2,12 @@
 @using FlashcardsAI.Models
 @using FlashcardsAI.Services.Ai
 @using FlashcardsAI.Services.TextExtraction
+@using FlashcardsAI.Services.Training
 @using System.IO
 @inject IAiFlashcardGenerator AiGenerator
 @inject ITextExtractor TextExtractor
+@inject TrainingState TrainingState
+@inject NavigationManager NavigationManager
 
 <PageTitle>AI Flashcards</PageTitle>
 
@@ -93,6 +96,12 @@
     <div class="results-head">
         <MudText Typo="Typo.h5">Results</MudText>
         <MudText Typo="Typo.caption" Class="muted">Your generated flashcards</MudText>
+        @if (Cards.Count > 0)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="GoToTraining">
+                Start training
+            </MudButton>
+        }
     </div>
 
     @if (IsBusy)
@@ -235,6 +244,7 @@
 
             _cards.Clear();
             _cards.AddRange(result);
+            TrainingState.SetCards(_cards);
             InfoMessage = $"Generated {Cards.Count} flashcards.";
         }
         catch (Exception ex)
@@ -269,9 +279,21 @@
         SourceText = string.Empty;
         SelectedFile = null;
         _cards.Clear();
+        TrainingState.Clear();
         ErrorMessage = null;
         InfoMessage = null;
         InputMode = InputModeKind.Text;
+    }
+
+    private void GoToTraining()
+    {
+        if (Cards.Count == 0)
+        {
+            return;
+        }
+
+        TrainingState.SetCards(_cards);
+        NavigationManager.NavigateTo("/train");
     }
 
     private static string FormatBytes(long bytes)

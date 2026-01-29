@@ -1,6 +1,7 @@
 using FlashcardsAI.Components;
 using FlashcardsAI.Services.Ai;
 using FlashcardsAI.Services.TextExtraction;
+using FlashcardsAI.Services.Training;
 using MudBlazor.Services;
 
 
@@ -16,6 +17,7 @@ builder.Services.AddHttpClient<IAiFlashcardGenerator, OpenAiFlashcardGenerator>(
     client.BaseAddress = new Uri("https://api.openai.com/v1/");
 });
 builder.Services.AddScoped<ITextExtractor, FileTextExtractor>();
+builder.Services.AddScoped<TrainingState>();
 
 var app = builder.Build();
 

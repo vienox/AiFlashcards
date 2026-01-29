@@ -112,6 +112,7 @@ body {
     justify-content: space-between;
     align-items: baseline;
     margin-bottom: 16px;
+    gap: 12px;
 }
 
 .muted {
@@ -149,4 +150,67 @@ body {
         align-items: flex-start;
         gap: 6px;
     }
+}
+
+.train-shell {
+    padding: 24px 20px 64px;
+    display: grid;
+    gap: 16px;
+}
+
+.train-meta {
+    margin-top: 12px;
+}
+
+.train-card {
+    padding: 28px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid var(--line);
+    min-height: 220px;
+    display: grid;
+    gap: 12px;
+    align-content: center;
+    text-align: center;
+}
+
+.card-label {
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.75rem;
+}
+
+.train-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.flip-card {
+    perspective: 1200px;
+    cursor: pointer;
+}
+
+.flip-card__inner {
+    position: relative;
+    width: 100%;
+    min-height: 240px;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+}
+
+.flip-card.is-flipped .flip-card__inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card__face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+}
+
+.flip-card__back {
+    transform: rotateY(180deg);
 }
