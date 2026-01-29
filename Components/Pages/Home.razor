@@ -2,6 +2,7 @@
 @using FlashcardsAI.Models
 @using FlashcardsAI.Services.Ai
 @using FlashcardsAI.Services.TextExtraction
+@using System.IO
 @inject IAiFlashcardGenerator AiGenerator
 @inject ITextExtractor TextExtractor
 
@@ -17,10 +18,9 @@
                 <MudText Typo="Typo.h2">AI flashcards from your materials</MudText>
                 <MudText Typo="Typo.body1" Class="hero-lead">
                     Paste text, drop in a PDF or TXT, and generate flashcards in seconds.
-                    For now demo mode is enabled so you can check that everything works.
                 </MudText>
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="demo-alert">
-                    <b>Demo mode:</b> The test generator builds flashcards from the provided text.
+                    <b>Tip:</b> Use the sample button to test the flow with a short text.
                 </MudAlert>
             </MudPaper>
         </MudItem>
@@ -65,7 +65,7 @@
                         @(IsBusy ? "Generating..." : "Generate flashcards")
                     </MudButton>
                     <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="TryDemoAsync" Disabled="@IsBusy">
-                        Check it works
+                        Try sample
                     </MudButton>
                     <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="ClearAll" Disabled="@IsBusy">
                         Clear
@@ -189,27 +189,53 @@
 
         try
         {
-            var text = InputMode == InputModeKind.Text
-                ? SourceText
-                : await ExtractFromFileAsync();
+            var options = new GenerateOptions { Count = CardCount };
+            List<Flashcard> result;
 
-            if (string.IsNullOrWhiteSpace(text))
+            if (InputMode == InputModeKind.File)
             {
-                if (string.IsNullOrWhiteSpace(ErrorMessage))
+                if (SelectedFile is null)
                 {
-                    ErrorMessage = InputMode == InputModeKind.Text
-                        ? "Paste some text to generate flashcards."
-                        : "Select a text file.";
+                    ErrorMessage = "No file selected.";
+                    return;
                 }
 
-                return;
+                var extension = Path.GetExtension(SelectedFile.Name);
+                if (!string.Equals(extension, ".pdf", StringComparison.OrdinalIgnoreCase))
+                {
+                    var text = await ExtractFromFileAsync();
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        if (string.IsNullOrWhiteSpace(ErrorMessage))
+                        {
+                            ErrorMessage = "Select a text file.";
+                        }
+
+                        return;
+                    }
+
+                    result = await AiGenerator.GenerateAsync(text, options);
+                }
+                else
+                {
+                    result = await AiGenerator.GenerateFromFileAsync(SelectedFile, options);
+                }
+            }
+            else
+            {
+                var text = SourceText;
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    ErrorMessage = "Paste some text to generate flashcards.";
+                    return;
+                }
+
+                result = await AiGenerator.GenerateAsync(text, options);
             }
 
-            var options = new GenerateOptions { Count = CardCount };
-            var result = await AiGenerator.GenerateAsync(text, options);
             _cards.Clear();
             _cards.AddRange(result);
-            InfoMessage = $"Generated {Cards.Count} flashcards (demo mode).";
+            InfoMessage = $"Generated {Cards.Count} flashcards.";
         }
         catch (Exception ex)
         {

@@ -1,13 +1,21 @@
 using FlashcardsAI.Components;
+using FlashcardsAI.Services.Ai;
+using FlashcardsAI.Services.TextExtraction;
+using MudBlazor.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration["OpenAI:ApiKey"];
 
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+builder.Services.AddMudServices();
+builder.Services.AddHttpClient<IAiFlashcardGenerator, OpenAiFlashcardGenerator>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com/v1/");
+});
+builder.Services.AddScoped<ITextExtractor, FileTextExtractor>();
 
 var app = builder.Build();
 

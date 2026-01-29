@@ -1,9 +1,18 @@
 using FlashcardsAI.Models;
+using FlashcardsAI.Services.TextExtraction;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace FlashcardsAI.Services.Ai;
 
 public class FakeAiFlashcardGenerator : IAiFlashcardGenerator
 {
+    private readonly ITextExtractor _textExtractor;
+
+    public FakeAiFlashcardGenerator(ITextExtractor textExtractor)
+    {
+        _textExtractor = textExtractor;
+    }
+
     public Task<List<Flashcard>> GenerateAsync(
         string sourceText,
         GenerateOptions options,
@@ -38,5 +47,14 @@ public class FakeAiFlashcardGenerator : IAiFlashcardGenerator
         }
 
         return Task.FromResult(cards);
+    }
+
+    public async Task<List<Flashcard>> GenerateFromFileAsync(
+        IBrowserFile file,
+        GenerateOptions options,
+        CancellationToken ct = default)
+    {
+        var result = await _textExtractor.ExtractAsync(file, ct);
+        return await GenerateAsync(result.Text, options, ct);
     }
 }
