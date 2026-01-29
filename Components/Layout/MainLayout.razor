@@ -6,8 +6,10 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <MudAppBar Color="Color.Primary" Elevation="0" Dense="true">
-        <MudText Typo="Typo.h6" Class="app-title">AI Flashcards</MudText>
+    <MudAppBar Color="Color.Primary" Elevation="0" Dense="true" Class="appbar">
+        <MudToolbar DisableGutters="true">
+            <a href="/" class="app-title-link">AI Flashcards</a>
+        </MudToolbar>
     </MudAppBar>
     <MudMainContent Class="main-content">
         @Body
