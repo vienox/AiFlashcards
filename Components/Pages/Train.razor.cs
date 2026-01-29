@@ -13,6 +13,11 @@ public partial class Train
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
+    private int Progress =>
+        TrainingState.HasCards
+            ? (int)Math.Round((TrainingState.CurrentIndex + 1) * 100d / TrainingState.Cards.Count)
+            : 0;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (TrainingState.HasCards)

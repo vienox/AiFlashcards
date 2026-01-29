@@ -2,8 +2,18 @@
 <PageTitle>Train</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="train-shell">
-    <MudText Typo="Typo.h4">Training</MudText>
-    <MudText Typo="Typo.body2" Class="muted">Click the card to flip it.</MudText>
+    <div class="train-top">
+        <div>
+            <MudText Typo="Typo.h4">Training</MudText>
+            <MudText Typo="Typo.body2" Class="muted">Tap the card or press Flip.</MudText>
+        </div>
+        @if (TrainingState.HasCards)
+        {
+            <div class="train-count">
+                Card @(TrainingState.CurrentIndex + 1) / @TrainingState.Cards.Count
+            </div>
+        }
+    </div>
 
     @if (!TrainingState.HasCards)
     {
@@ -16,9 +26,7 @@
     }
     else
     {
-        <div class="train-meta">
-            <MudText Typo="Typo.subtitle2">Card @(TrainingState.CurrentIndex + 1) of @TrainingState.Cards.Count</MudText>
-        </div>
+        <MudProgressLinear Value="@Progress" Color="Color.Secondary" Class="train-progress" />
 
         <div id="training-card" class="flip-card @(IsFlipped ? "is-flipped" : "")" @ref="CardRef" @onclick="FlipCardAsync">
             <div class="flip-card__inner">

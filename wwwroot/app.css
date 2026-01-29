@@ -156,22 +156,42 @@ body {
     padding: 24px 20px 64px;
     display: grid;
     gap: 16px;
-    background: radial-gradient(circle at 20% 0%, rgba(255, 122, 61, 0.12), transparent 40%),
-        radial-gradient(circle at 80% 20%, rgba(31, 122, 140, 0.12), transparent 45%);
-    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 24px 40px rgba(31, 23, 15, 0.08);
     width: 100%;
 }
 
-.train-meta {
-    margin-top: 12px;
+.train-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.train-count {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(31, 122, 140, 0.12);
+    color: #12505d;
+    font-weight: 600;
+}
+
+.train-progress {
+    margin: 4px 0 8px;
 }
 
 .train-card {
     padding: 28px;
     border-radius: 20px;
-    background: linear-gradient(145deg, #ffffff, #f5eee6);
-    border: 1px solid rgba(234, 220, 201, 0.9);
-    min-height: 260px;
+    background: linear-gradient(145deg, #ffffff, #f7f2ea);
+    border: 1px solid rgba(234, 220, 201, 0.7);
+    min-height: 280px;
     display: grid;
     gap: 12px;
     align-content: center;
@@ -200,7 +220,7 @@ body {
     perspective: 1200px;
     cursor: pointer;
     width: 100%;
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
     position: relative;
 }
@@ -209,20 +229,6 @@ body {
     font-weight: 700;
     line-height: 1.25;
     margin: 0;
-}
-
-.flip-card::after {
-    content: "";
-    position: absolute;
-    inset: -40px;
-    background: linear-gradient(120deg, rgba(255, 255, 255, 0.15), transparent 40%);
-    transform: translateX(-60%);
-    transition: transform 0.6s ease;
-    pointer-events: none;
-}
-
-.flip-card:hover::after {
-    transform: translateX(20%);
 }
 
 .flip-card__inner {
@@ -251,6 +257,7 @@ body {
     background: linear-gradient(160deg, #1f7a8c, #12505d);
     color: #fff;
     border-color: rgba(31, 122, 140, 0.6);
+    box-shadow: 0 22px 36px rgba(18, 80, 93, 0.35);
 }
 
 .flip-card__back .card-label {
