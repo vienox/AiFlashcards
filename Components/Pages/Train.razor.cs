@@ -20,6 +20,7 @@ public partial class Train
             try
             {
                 await JSRuntime.InvokeVoidAsync("flashcardsTraining.init", CardRef);
+                await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
             }
             catch (JSException)
             {
@@ -52,6 +53,7 @@ public partial class Train
         try
         {
             await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
         }
         catch (JSException)
         {
@@ -65,6 +67,7 @@ public partial class Train
         try
         {
             await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
         }
         catch (JSException)
         {
@@ -78,6 +81,7 @@ public partial class Train
         try
         {
             await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
         }
         catch (JSException)
         {
