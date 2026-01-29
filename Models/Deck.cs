@@ -1,7 +1,14 @@
 namespace FlashcardsAI.Models;
 
-public sealed class Deck
+public class Deck
 {
-    public string Title { get; set; } = string.Empty;
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public string Title { get; set; } = "New deck";
+
+    public string? SourceName { get; set; }
+
+    public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
+
     public List<Flashcard> Cards { get; set; } = new();
 }

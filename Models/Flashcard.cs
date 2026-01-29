@@ -1,7 +1,11 @@
 namespace FlashcardsAI.Models;
 
-public sealed class Flashcard
+public class Flashcard
 {
-    public string Front { get; set; } = string.Empty;
-    public string Back { get; set; } = string.Empty;
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    public string Front { get; set; } = string.Empty; 
+    public string Back { get; set; } = string.Empty;  
+
+    public string? Tag { get; set; } 
 }
