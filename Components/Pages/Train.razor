@@ -1,8 +1,4 @@
 @page "/train"
-@using FlashcardsAI.Services.Training
-@inject TrainingState TrainingState
-@inject NavigationManager NavigationManager
-
 <PageTitle>Train</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Medium" Class="train-shell">
@@ -14,7 +10,7 @@
         <MudPaper Class="placeholder" Elevation="0">
             No flashcards loaded. Generate cards first.
         </MudPaper>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(() => NavigationManager.NavigateTo("/"))">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GoBack">
             Back to generator
         </MudButton>
     }
@@ -57,35 +53,3 @@
         </div>
     }
 </MudContainer>
-
-@code {
-    private bool IsFlipped { get; set; }
-
-    private void ToggleFlip()
-    {
-        if (!TrainingState.HasCards)
-        {
-            return;
-        }
-
-        IsFlipped = !IsFlipped;
-    }
-
-    private void Next()
-    {
-        TrainingState.Next();
-        IsFlipped = false;
-    }
-
-    private void Previous()
-    {
-        TrainingState.Previous();
-        IsFlipped = false;
-    }
-
-    private void Shuffle()
-    {
-        TrainingState.Shuffle();
-        IsFlipped = false;
-    }
-}
