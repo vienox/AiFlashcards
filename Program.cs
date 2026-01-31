@@ -4,6 +4,8 @@ using FlashcardsAI.Services.Ai;
 using FlashcardsAI.Services.Data;
 using FlashcardsAI.Services.TextExtraction;
 using FlashcardsAI.Services.Training;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -19,12 +21,30 @@ builder.Services.AddHttpClient<IAiFlashcardGenerator, OpenAiFlashcardGenerator>(
 {
     client.BaseAddress = new Uri("https://api.openai.com/v1/");
 });
-builder.Services.AddDbContextFactory<AppDbContext>(options =>
+builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("Default")
         ?? "Data Source=flashcards.db";
     options.UseSqlite(connectionString);
 });
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+    {
+        options.User.RequireUniqueEmail = false;
+        options.Password.RequiredLength = 6;
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
+    })
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+});
+builder.Services.AddAuthorization();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<ITextExtractor, FileTextExtractor>();
 builder.Services.AddScoped<TrainingState>();
 builder.Services.AddScoped<FlashcardStore>();
@@ -33,8 +53,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<AppDbContext>>();
-    using var db = dbFactory.CreateDbContext();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     if (db.Database.GetMigrations().Any())
     {
         db.Database.Migrate();
@@ -53,6 +72,8 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

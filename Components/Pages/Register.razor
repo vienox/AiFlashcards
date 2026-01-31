@@ -1,0 +1,123 @@
+@page "/register"
+@attribute [AllowAnonymous]
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+
+<PageTitle>Register</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="page-shell">
+    <MudPaper Class="panel" Elevation="6">
+        <MudText Typo="Typo.h5">Create account</MudText>
+        <MudText Typo="Typo.body2" Class="muted">Create an account to save decks and flashcards.</MudText>
+
+        <EditForm Model="_model" OnValidSubmit="HandleRegisterAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <MudTextField Label="Username"
+                          @bind-Value="_model.UserName"
+                          Variant="Variant.Outlined"
+                          Class="field-gap" />
+            <MudTextField Label="Password"
+                          @bind-Value="_model.Password"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Password"
+                          Class="field-gap" />
+            <MudTextField Label="Confirm password"
+                          @bind-Value="_model.ConfirmPassword"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Password"
+                          Class="field-gap" />
+
+            <div class="action-row">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="@IsBusy">
+                    @(IsBusy ? "Creating..." : "Register")
+                </MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="GoToLogin" Disabled="@IsBusy">
+                    Back to login
+                </MudButton>
+            </div>
+        </EditForm>
+
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="alert-gap">
+                @ErrorMessage
+            </MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private readonly RegisterModel _model = new();
+    private string? ErrorMessage { get; set; }
+    private bool IsBusy { get; set; }
+
+    [Inject] public UserManager<IdentityUser> UserManager { get; set; } = default!;
+    [Inject] public SignInManager<IdentityUser> SignInManager { get; set; } = default!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    private async Task HandleRegisterAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        ErrorMessage = null;
+        IsBusy = true;
+
+        try
+        {
+            var user = new IdentityUser
+            {
+                UserName = _model.UserName.Trim()
+            };
+
+            var result = await UserManager.CreateAsync(user, _model.Password);
+            if (result.Succeeded)
+            {
+                await SignInManager.SignInAsync(user, isPersistent: false);
+                NavigationManager.NavigateTo(GetSafeReturnUrl(), forceLoad: true);
+                return;
+            }
+
+            ErrorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void GoToLogin()
+    {
+        var returnUrl = Uri.EscapeDataString(GetSafeReturnUrl());
+        NavigationManager.NavigateTo($"/login?returnUrl={returnUrl}");
+    }
+
+    private string GetSafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+        {
+            return "/";
+        }
+
+        return ReturnUrl.StartsWith("/") ? ReturnUrl : "/";
+    }
+
+    private sealed class RegisterModel
+    {
+        [Required]
+        public string UserName { get; set; } = string.Empty;
+
+        [Required]
+        [MinLength(6)]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [Compare(nameof(Password))]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

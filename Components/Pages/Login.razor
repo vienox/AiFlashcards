@@ -1,0 +1,124 @@
+@page "/login"
+@attribute [AllowAnonymous]
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+
+<PageTitle>Log in</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="page-shell">
+    <MudPaper Class="panel" Elevation="6">
+        <MudText Typo="Typo.h5">Log in</MudText>
+        <MudText Typo="Typo.body2" Class="muted">Use your account to access flashcards.</MudText>
+
+        <EditForm Model="_model" OnValidSubmit="HandleLoginAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <MudTextField Label="Username"
+                          @bind-Value="_model.UserName"
+                          Variant="Variant.Outlined"
+                          Class="field-gap" />
+            <MudTextField Label="Password"
+                          @bind-Value="_model.Password"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Password"
+                          Class="field-gap" />
+            <MudCheckBox T="bool" @bind-Value="_model.RememberMe" Label="Remember me" />
+
+            <div class="action-row">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="@IsBusy">
+                    @(IsBusy ? "Signing in..." : "Log in")
+                </MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="GoToRegister" Disabled="@IsBusy">
+                    Create account
+                </MudButton>
+            </div>
+        </EditForm>
+
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="alert-gap">
+                @ErrorMessage
+            </MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private readonly LoginModel _model = new();
+    private string? ErrorMessage { get; set; }
+    private bool IsBusy { get; set; }
+
+    [Inject] public SignInManager<IdentityUser> SignInManager { get; set; } = default!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            NavigationManager.NavigateTo(GetSafeReturnUrl(), forceLoad: true);
+        }
+    }
+
+    private async Task HandleLoginAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        ErrorMessage = null;
+        IsBusy = true;
+
+        try
+        {
+            var result = await SignInManager.PasswordSignInAsync(
+                _model.UserName,
+                _model.Password,
+                _model.RememberMe,
+                lockoutOnFailure: false);
+
+            if (result.Succeeded)
+            {
+                NavigationManager.NavigateTo(GetSafeReturnUrl(), forceLoad: true);
+                return;
+            }
+
+            ErrorMessage = "Invalid username or password.";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private void GoToRegister()
+    {
+        var returnUrl = Uri.EscapeDataString(GetSafeReturnUrl());
+        NavigationManager.NavigateTo($"/register?returnUrl={returnUrl}");
+    }
+
+    private string GetSafeReturnUrl()
+    {
+        if (string.IsNullOrWhiteSpace(ReturnUrl))
+        {
+            return "/";
+        }
+
+        return ReturnUrl.StartsWith("/") ? ReturnUrl : "/";
+    }
+
+    private sealed class LoginModel
+    {
+        [Required]
+        public string UserName { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+
+        public bool RememberMe { get; set; }
+    }
+}

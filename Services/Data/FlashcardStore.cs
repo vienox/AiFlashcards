@@ -6,11 +6,11 @@ namespace FlashcardsAI.Services.Data;
 
 public class FlashcardStore
 {
-    private readonly IDbContextFactory<AppDbContext> _dbFactory;
+    private readonly AppDbContext _db;
 
-    public FlashcardStore(IDbContextFactory<AppDbContext> dbFactory)
+    public FlashcardStore(AppDbContext db)
     {
-        _dbFactory = dbFactory;
+        _db = db;
     }
 
     public async Task<Deck> SaveDeckAsync(
@@ -25,21 +25,19 @@ public class FlashcardStore
 
         var normalized = accountName.Trim();
 
-        await using var db = await _dbFactory.CreateDbContextAsync(ct);
-
-        var account = await db.Accounts
+        var account = await _db.Accounts
             .FirstOrDefaultAsync(a => a.DisplayName == normalized, ct);
 
         if (account is null)
         {
             account = new Account { DisplayName = normalized };
-            db.Accounts.Add(account);
+            _db.Accounts.Add(account);
         }
 
         deck.Account = account;
-        db.Decks.Add(deck);
+        _db.Decks.Add(deck);
 
-        await db.SaveChangesAsync(ct);
+        await _db.SaveChangesAsync(ct);
 
         return deck;
     }

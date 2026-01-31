@@ -6,6 +6,7 @@ using FlashcardsAI.Services.TextExtraction;
 using FlashcardsAI.Services.Training;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace FlashcardsAI.Components.Pages;
 
@@ -16,11 +17,12 @@ public partial class Home
     private string SourceText { get; set; } = string.Empty;
     private IBrowserFile? SelectedFile { get; set; }
     private int CardCount { get; set; } = 8;
-    private string AccountName { get; set; } = "local";
     private bool IsBusy { get; set; }
     private string? ErrorMessage { get; set; }
     private string? InfoMessage { get; set; }
     private InputModeKind _inputMode = InputModeKind.Text;
+
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
     [Inject] public IAiFlashcardGenerator AiGenerator { get; set; } = default!;
     [Inject] public ITextExtractor TextExtractor { get; set; } = default!;
@@ -67,13 +69,20 @@ public partial class Home
             return;
         }
 
-        var accountName = AccountName.Trim();
-        if (string.IsNullOrWhiteSpace(accountName))
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        if (user?.Identity is null || !user.Identity.IsAuthenticated)
         {
-            ErrorMessage = "Enter an account name.";
+            ErrorMessage = "You must be logged in.";
             return;
         }
-        AccountName = accountName;
+
+        var accountName = user.Identity.Name;
+        if (string.IsNullOrWhiteSpace(accountName))
+        {
+            ErrorMessage = "Unable to determine account name.";
+            return;
+        }
 
         IsBusy = true;
         ErrorMessage = null;
