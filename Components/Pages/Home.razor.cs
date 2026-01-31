@@ -1,6 +1,7 @@
 using System.IO;
 using FlashcardsAI.Models;
 using FlashcardsAI.Services.Ai;
+using FlashcardsAI.Services.Data;
 using FlashcardsAI.Services.TextExtraction;
 using FlashcardsAI.Services.Training;
 using Microsoft.AspNetCore.Components;
@@ -15,6 +16,7 @@ public partial class Home
     private string SourceText { get; set; } = string.Empty;
     private IBrowserFile? SelectedFile { get; set; }
     private int CardCount { get; set; } = 8;
+    private string AccountName { get; set; } = "local";
     private bool IsBusy { get; set; }
     private string? ErrorMessage { get; set; }
     private string? InfoMessage { get; set; }
@@ -23,6 +25,7 @@ public partial class Home
     [Inject] public IAiFlashcardGenerator AiGenerator { get; set; } = default!;
     [Inject] public ITextExtractor TextExtractor { get; set; } = default!;
     [Inject] public TrainingState TrainingState { get; set; } = default!;
+    [Inject] public FlashcardStore FlashcardStore { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     private IReadOnlyList<Flashcard> Cards => _cards;
@@ -63,6 +66,14 @@ public partial class Home
         {
             return;
         }
+
+        var accountName = AccountName.Trim();
+        if (string.IsNullOrWhiteSpace(accountName))
+        {
+            ErrorMessage = "Enter an account name.";
+            return;
+        }
+        AccountName = accountName;
 
         IsBusy = true;
         ErrorMessage = null;
@@ -117,7 +128,18 @@ public partial class Home
             _cards.Clear();
             _cards.AddRange(result);
             TrainingState.SetCards(_cards);
-            InfoMessage = $"Generated {Cards.Count} flashcards.";
+
+            var deck = new Deck
+            {
+                Title = InputMode == InputModeKind.File && SelectedFile is not null
+                    ? Path.GetFileNameWithoutExtension(SelectedFile.Name)
+                    : "Generated deck",
+                SourceName = InputMode == InputModeKind.File ? SelectedFile?.Name : "Text input",
+                Cards = _cards.ToList()
+            };
+
+            await FlashcardStore.SaveDeckAsync(accountName, deck);
+            InfoMessage = $"Generated {Cards.Count} flashcards for {accountName}.";
         }
         catch (Exception ex)
         {

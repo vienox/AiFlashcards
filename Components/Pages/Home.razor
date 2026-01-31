@@ -17,6 +17,10 @@
         <MudItem xs="12" md="6">
             <MudPaper Class="panel" Elevation="6">
                 <MudText Typo="Typo.h6">Source</MudText>
+                <MudTextField Label="Account name"
+                              @bind-Value="AccountName"
+                              Variant="Variant.Outlined"
+                              Class="field-gap" />
                 <MudSelect T="InputModeKind"
                            Label="Mode"
                            @bind-Value="InputMode"

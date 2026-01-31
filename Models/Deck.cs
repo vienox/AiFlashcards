@@ -4,6 +4,10 @@ public class Deck
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 
+    public Guid AccountId { get; set; }
+
+    public Account? Account { get; set; }
+
     public string Title { get; set; } = "New deck";
 
     public string? SourceName { get; set; }
