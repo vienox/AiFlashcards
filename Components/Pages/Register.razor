@@ -10,24 +10,21 @@
         <MudText Typo="Typo.h5">Create account</MudText>
         <MudText Typo="Typo.body2" Class="muted">Create an account to save decks and flashcards.</MudText>
 
-        <EditForm EditContext="_editContext" OnValidSubmit="HandleRegisterAsync" OnInvalidSubmit="HandleInvalidSubmit">
+        <EditForm Model="_model" OnValidSubmit="HandleRegisterAsync">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
             <MudTextField Label="Username"
                           @bind-Value="_model.UserName"
-                          For="@(() => _model.UserName)"
                           Variant="Variant.Outlined"
                           Class="field-gap" />
             <MudTextField Label="Password"
                           @bind-Value="_model.Password"
-                          For="@(() => _model.Password)"
                           Variant="Variant.Outlined"
                           InputType="InputType.Password"
                           Class="field-gap" />
             <MudTextField Label="Confirm password"
                           @bind-Value="_model.ConfirmPassword"
-                          For="@(() => _model.ConfirmPassword)"
                           Variant="Variant.Outlined"
                           InputType="InputType.Password"
                           Class="field-gap" />
@@ -36,7 +33,7 @@
                 <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Disabled="@IsBusy">
                     @(IsBusy ? "Creating..." : "Register")
                 </MudButton>
-                <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="GoToLogin" ButtonType="ButtonType.Button" Disabled="@IsBusy">
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="GoToLogin" Disabled="@IsBusy">
                     Back to login
                 </MudButton>
             </div>
@@ -52,8 +49,7 @@
 </MudContainer>
 
 @code {
-    private readonly RegisterModel _model = new();
-    private EditContext _editContext = default!;
+    private readonly RegisterModel _model = new RegisterModel();
     private string? ErrorMessage { get; set; }
     private bool IsBusy { get; set; }
 
@@ -61,11 +57,6 @@
     [Inject] public SignInManager<IdentityUser> SignInManager { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
-
-    protected override void OnInitialized()
-    {
-        _editContext = new EditContext(_model);
-    }
 
     private async Task HandleRegisterAsync()
     {
@@ -98,11 +89,6 @@
         {
             IsBusy = false;
         }
-    }
-
-    private void HandleInvalidSubmit(EditContext editContext)
-    {
-        ErrorMessage = "Please fix the highlighted fields and try again.";
     }
 
     private void GoToLogin()

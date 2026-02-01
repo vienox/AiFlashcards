@@ -75,7 +75,82 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapPost("/account/register", async (RegisterRequest request, UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return Results.BadRequest(new { error = "Username and password are required." });
+        }
+
+        if (!string.Equals(request.Password, request.ConfirmPassword, StringComparison.Ordinal))
+        {
+            return Results.BadRequest(new { error = "Passwords do not match." });
+        }
+
+        var user = new IdentityUser
+        {
+            UserName = request.UserName.Trim()
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+        {
+            var errorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+            return Results.BadRequest(new { error = errorMessage });
+        }
+
+        await signInManager.SignInAsync(user, isPersistent: false);
+
+        return Results.Ok(new { returnUrl = AuthHelpers.GetSafeReturnUrl(request.ReturnUrl) });
+    })
+    .AllowAnonymous();
+
+app.MapPost("/account/login", async (LoginRequest request, SignInManager<IdentityUser> signInManager) =>
+    {
+        if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
+        {
+            return Results.BadRequest(new { error = "Username and password are required." });
+        }
+
+        var result = await signInManager.PasswordSignInAsync(
+            request.UserName.Trim(),
+            request.Password,
+            request.RememberMe,
+            lockoutOnFailure: false);
+
+        if (!result.Succeeded)
+        {
+            return Results.BadRequest(new { error = "Invalid username or password." });
+        }
+
+        return Results.Ok(new { returnUrl = AuthHelpers.GetSafeReturnUrl(request.ReturnUrl) });
+    })
+    .AllowAnonymous();
+
+app.MapPost("/account/logout", async (SignInManager<IdentityUser> signInManager) =>
+    {
+        await signInManager.SignOutAsync();
+        return Results.Ok();
+    })
+    .RequireAuthorization();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+static class AuthHelpers
+{
+    public static string GetSafeReturnUrl(string? returnUrl)
+    {
+        if (string.IsNullOrWhiteSpace(returnUrl))
+        {
+            return "/";
+        }
+
+        return returnUrl.StartsWith("/") ? returnUrl : "/";
+    }
+}
+
+record RegisterRequest(string UserName, string Password, string ConfirmPassword, string? ReturnUrl);
+record LoginRequest(string UserName, string Password, bool RememberMe, string? ReturnUrl);
