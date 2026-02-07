@@ -10,7 +10,8 @@
         @if (TrainingState.HasCards)
         {
             <div class="train-count">
-                Card @(TrainingState.CurrentIndex + 1) / @TrainingState.Cards.Count
+                <div>Card @(TrainingState.CurrentIndex + 1) / @TrainingState.Cards.Count</div>
+                <div style="color: #4caf50; font-weight: 500;">✓ Correct: @TrainingState.CorrectCount / @TrainingState.TotalCardsAtStart</div>
             </div>
         }
     </div>
@@ -49,19 +50,63 @@
             </div>
         </div>
 
-        <div class="train-actions">
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Previous" Class="train-btn train-btn--ghost">
-                Previous
-            </MudButton>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="FlipCardAsync" Class="train-btn train-btn--primary">
-                Flip
-            </MudButton>
-            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Next" Class="train-btn train-btn--ghost">
-                Next
-            </MudButton>
-            <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Shuffle" Class="train-btn train-btn--text">
-                Shuffle
-            </MudButton>
-        </div>
+        @if (!ShowingResults)
+        {
+            <div class="train-actions">
+                @if (!IsFlipped)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Previous" Class="train-btn train-btn--ghost">
+                        Previous
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="FlipCardAsync" Class="train-btn train-btn--primary">
+                        Flip
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Next" Class="train-btn train-btn--ghost">
+                        Next
+                    </MudButton>
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="MarkCorrect" Class="train-btn" Style="flex: 1;">
+                        ✓ Correct
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="MarkWrong" Class="train-btn" Style="flex: 1;">
+                        ✗ Wrong
+                    </MudButton>
+                }
+            </div>
+            <div style="text-align: center; margin-top: 1rem;">
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Shuffle" Class="train-btn train-btn--text">
+                    Shuffle
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <MudPaper Class="placeholder" Elevation="0" Style="text-align: center; padding: 3rem;">
+                <MudText Typo="Typo.h5" Style="margin-bottom: 1rem;">🎉 Session Complete!</MudText>
+                <MudText Typo="Typo.body1" Style="margin-bottom: 0.5rem;">
+                    Correct: @TrainingState.CorrectCount / @TrainingState.TotalCardsAtStart
+                </MudText>
+                @if (TrainingState.HasWrongCards)
+                {
+                    <MudText Typo="Typo.body2" Style="color: #f44336; margin-bottom: 2rem;">
+                        Wrong cards: @TrainingState.WrongCardsCount
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="ReplayWrongCards" Style="margin-right: 1rem;">
+                        Replay Wrong Cards
+                    </MudButton>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Style="color: #4caf50; margin-bottom: 2rem;">
+                        Perfect score! 🌟
+                    </MudText>
+                }
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="GoBack">
+                    Back to Generator
+                </MudButton>
+            </MudPaper>
+        }
     }
 </MudContainer>

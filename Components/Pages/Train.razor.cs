@@ -8,6 +8,7 @@ public partial class Train
 {
     private ElementReference CardRef;
     private bool IsFlipped { get; set; }
+    private bool ShowingResults { get; set; }
 
     [Inject] public TrainingState TrainingState { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
@@ -96,5 +97,65 @@ public partial class Train
     private void GoBack()
     {
         NavigationManager.NavigateTo("/");
+    }
+
+    private async Task MarkCorrect()
+    {
+        TrainingState.MarkCorrect();
+        IsFlipped = false;
+
+        if (!TrainingState.HasCards)
+        {
+            ShowingResults = true;
+        }
+        else
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+                await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
+            }
+            catch (JSException)
+            {
+            }
+        }
+    }
+
+    private async Task MarkWrong()
+    {
+        TrainingState.MarkWrong();
+        IsFlipped = false;
+
+        if (!TrainingState.HasCards)
+        {
+            ShowingResults = true;
+        }
+        else
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+                await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
+            }
+            catch (JSException)
+            {
+            }
+        }
+    }
+
+    private async Task ReplayWrongCards()
+    {
+        TrainingState.ReplayWrongCards();
+        ShowingResults = false;
+        IsFlipped = false;
+
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
+        }
+        catch (JSException)
+        {
+        }
     }
 }
