@@ -21,6 +21,8 @@ packages/
 *.log
 logs/
 
+*.db
+
 Thumbs.db
 .DS_Store
 

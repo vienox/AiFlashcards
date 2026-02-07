@@ -1,4 +1,5 @@
 @inherits LayoutComponentBase
+@using MudBlazor
 
 <MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
@@ -7,9 +8,30 @@
 
 <MudLayout>
     <MudAppBar Color="Color.Primary" Elevation="0" Dense="true" Class="appbar">
-        <MudToolbar DisableGutters="true">
+        <MudToolBar>
             <a href="/" class="app-title-link">AI Flashcards</a>
-        </MudToolbar>
+            <MudSpacer />
+            <AuthorizeView>
+                <Authorized Context="auth">
+                    <div class="appbar-actions">
+                        <MudText Typo="Typo.subtitle2" Class="appbar-user">@auth.User.Identity?.Name</MudText>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="/logout" Class="appbar-button">
+                            Logout
+                        </MudButton>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="appbar-actions">
+                        <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="/login" Class="appbar-button">
+                            Log in
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Inherit" Href="/register" Class="appbar-button">
+                            Register
+                        </MudButton>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </MudToolBar>
     </MudAppBar>
     <MudMainContent Class="main-content">
         @Body

@@ -51,3 +51,30 @@ window.flashcardsTraining = (() => {
 
     return { init, flip, reset, resize };
 })();
+
+window.flashcardsAuth = (() => {
+    async function postJson(url, payload) {
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "same-origin",
+            body: payload ? JSON.stringify(payload) : "{}"
+        });
+
+        let data = null;
+        try {
+            data = await response.json();
+        } catch {
+            data = null;
+        }
+
+        return {
+            ok: response.ok,
+            status: response.status,
+            error: data && data.error ? data.error : null,
+            returnUrl: data && data.returnUrl ? data.returnUrl : null
+        };
+    }
+
+    return { postJson };
+})();

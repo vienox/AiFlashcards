@@ -39,6 +39,23 @@ body {
     padding: 0 12px;
 }
 
+.appbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-right: 12px;
+}
+
+.appbar-user {
+    color: #fff;
+    font-weight: 600;
+}
+
+.appbar-button {
+    color: #fff !important;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
 .page-shell {
     padding: 0 20px;
 }

@@ -1,10 +1,12 @@
 using System.IO;
 using FlashcardsAI.Models;
 using FlashcardsAI.Services.Ai;
+using FlashcardsAI.Services.Data;
 using FlashcardsAI.Services.TextExtraction;
 using FlashcardsAI.Services.Training;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace FlashcardsAI.Components.Pages;
 
@@ -20,9 +22,12 @@ public partial class Home
     private string? InfoMessage { get; set; }
     private InputModeKind _inputMode = InputModeKind.Text;
 
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
     [Inject] public IAiFlashcardGenerator AiGenerator { get; set; } = default!;
     [Inject] public ITextExtractor TextExtractor { get; set; } = default!;
     [Inject] public TrainingState TrainingState { get; set; } = default!;
+    [Inject] public FlashcardStore FlashcardStore { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     private IReadOnlyList<Flashcard> Cards => _cards;
@@ -61,6 +66,21 @@ public partial class Home
     {
         if (IsBusy)
         {
+            return;
+        }
+
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        if (user?.Identity is null || !user.Identity.IsAuthenticated)
+        {
+            ErrorMessage = "You must be logged in.";
+            return;
+        }
+
+        var accountName = user.Identity.Name;
+        if (string.IsNullOrWhiteSpace(accountName))
+        {
+            ErrorMessage = "Unable to determine account name.";
             return;
         }
 
@@ -117,7 +137,18 @@ public partial class Home
             _cards.Clear();
             _cards.AddRange(result);
             TrainingState.SetCards(_cards);
-            InfoMessage = $"Generated {Cards.Count} flashcards.";
+
+            var deck = new Deck
+            {
+                Title = InputMode == InputModeKind.File && SelectedFile is not null
+                    ? Path.GetFileNameWithoutExtension(SelectedFile.Name)
+                    : "Generated deck",
+                SourceName = InputMode == InputModeKind.File ? SelectedFile?.Name : "Text input",
+                Cards = _cards.ToList()
+            };
+
+            await FlashcardStore.SaveDeckAsync(accountName, deck);
+            InfoMessage = $"Generated {Cards.Count} flashcards for {accountName}.";
         }
         catch (Exception ex)
         {
