@@ -250,6 +250,41 @@ public partial class Home
         NavigationManager.NavigateTo("/train");
     }
 
+    private async Task DeleteDeckAsync(Deck deck)
+    {
+        if (deck is null || IsBusy)
+        {
+            return;
+        }
+
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            var user = authState.User;
+            if (user?.Identity is null || !user.Identity.IsAuthenticated)
+            {
+                return;
+            }
+
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return;
+            }
+
+            var success = await FlashcardStore.DeleteDeckAsync(deck.Id, userId);
+            if (success)
+            {
+                await LoadSavedDecksAsync();
+                InfoMessage = $"Deleted \"{deck.Title}\".";
+            }
+        }
+        catch
+        {
+            ErrorMessage = "Failed to delete deck.";
+        }
+    }
+
     private static string FormatBytes(long bytes)
     {
         if (bytes < 1024)

@@ -89,14 +89,21 @@
             @foreach (var deck in SavedDecks)
             {
                 <MudItem xs="12" sm="6" md="4">
-                    <MudPaper Class="flashcard deck-card" Elevation="4" @onclick="() => LoadDeckAndTrain(deck)" Style="cursor: pointer; transition: transform 0.2s;">
-                        <MudText Typo="Typo.h6" Style="margin-bottom: 0.5rem;">@deck.Title</MudText>
-                        <MudText Typo="Typo.caption" Class="muted">@deck.Cards.Count cards</MudText>
-                        <MudText Typo="Typo.caption" Class="muted">Created @deck.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</MudText>
-                        @if (!string.IsNullOrWhiteSpace(deck.SourceName))
-                        {
-                            <MudText Typo="Typo.caption" Class="muted" Style="margin-top: 0.25rem;">📄 @deck.SourceName</MudText>
-                        }
+                    <MudPaper Class="flashcard deck-card" Elevation="4" Style="cursor: pointer; transition: transform 0.2s; position: relative;">
+                        <div @onclick="() => LoadDeckAndTrain(deck)">
+                            <MudText Typo="Typo.h6" Style="margin-bottom: 0.5rem;">@deck.Title</MudText>
+                            <MudText Typo="Typo.caption" Class="muted">@deck.Cards.Count cards</MudText>
+                            <MudText Typo="Typo.caption" Class="muted">Created @deck.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</MudText>
+                            @if (!string.IsNullOrWhiteSpace(deck.SourceName))
+                            {
+                                <MudText Typo="Typo.caption" Class="muted" Style="margin-top: 0.25rem;">📄 @deck.SourceName</MudText>
+                            }
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                       Color="Color.Error" 
+                                       Size="Size.Small"
+                                       OnClick="async () => await DeleteDeckAsync(deck)"
+                                       Style="position: absolute; top: 8px; right: 8px;" />
                     </MudPaper>
                 </MudItem>
             }

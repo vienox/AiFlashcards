@@ -72,4 +72,28 @@ public class FlashcardStore
             .Include(d => d.Cards)
             .FirstOrDefaultAsync(d => d.Id == deckId, ct);
     }
+
+    public async Task<bool> DeleteDeckAsync(
+        Guid deckId,
+        string userId,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return false;
+        }
+
+        var accountId = Guid.Parse(userId);
+        var deck = await _db.Decks
+            .FirstOrDefaultAsync(d => d.Id == deckId && d.AccountId == accountId, ct);
+
+        if (deck is null)
+        {
+            return false;
+        }
+
+        _db.Decks.Remove(deck);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 }
