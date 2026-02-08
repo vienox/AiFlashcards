@@ -298,6 +298,57 @@ public partial class Home
         }
     }
 
+    private async Task EditDeckTitleAsync(Deck deck)
+    {
+        if (deck is null || IsBusy)
+        {
+            return;
+        }
+
+        var parameters = new DialogParameters
+        {
+            { "Title", "Edit Deck Name" },
+            { "Text", deck.Title },
+            { "Label", "Deck Name" }
+        };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+        var dialog = await DialogService.ShowAsync<SimpleTextDialog>("Edit Deck Name", parameters, options);
+        var result = await dialog.Result;
+
+        if (result.Canceled || result.Data is not string newTitle || string.IsNullOrWhiteSpace(newTitle))
+        {
+            return;
+        }
+
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            var user = authState.User;
+            if (user?.Identity is null || !user.Identity.IsAuthenticated)
+            {
+                return;
+            }
+
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return;
+            }
+
+            var success = await FlashcardStore.UpdateDeckTitleAsync(deck.Id, userId, newTitle);
+            if (success)
+            {
+                await LoadSavedDecksAsync();
+                InfoMessage = $"Renamed to \"{newTitle}\".";
+            }
+        }
+        catch
+        {
+            ErrorMessage = "Failed to update deck name.";
+        }
+    }
+
     private static string FormatBytes(long bytes)
     {
         if (bytes < 1024)

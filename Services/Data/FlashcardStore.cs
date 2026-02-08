@@ -96,4 +96,29 @@ public class FlashcardStore
         await _db.SaveChangesAsync(ct);
         return true;
     }
+
+    public async Task<bool> UpdateDeckTitleAsync(
+        Guid deckId,
+        string userId,
+        string newTitle,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(newTitle))
+        {
+            return false;
+        }
+
+        var accountId = Guid.Parse(userId);
+        var deck = await _db.Decks
+            .FirstOrDefaultAsync(d => d.Id == deckId && d.AccountId == accountId, ct);
+
+        if (deck is null)
+        {
+            return false;
+        }
+
+        deck.Title = newTitle.Trim();
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
 }
