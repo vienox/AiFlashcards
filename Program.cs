@@ -47,6 +47,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 builder.Services.AddScoped<ITextExtractor, FileTextExtractor>();
 builder.Services.AddScoped<TrainingState>();
 builder.Services.AddScoped<FlashcardStore>();

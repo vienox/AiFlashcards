@@ -2,7 +2,7 @@
 @attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
-@using System.Net.Http.Json
+@using Microsoft.JSInterop
 
 <PageTitle>Register</PageTitle>
 
@@ -55,7 +55,7 @@
     private bool IsBusy { get; set; }
 
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
-    [Inject] public HttpClient HttpClient { get; set; } = default!;
+    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
 
     private async Task HandleRegisterAsync()
@@ -70,26 +70,23 @@
 
         try
         {
-            var request = new
+            var formData = new Dictionary<string, string>
             {
-                UserName = _model.UserName.Trim(),
-                Password = _model.Password,
-                ConfirmPassword = _model.ConfirmPassword,
-                ReturnUrl = GetSafeReturnUrl()
+                ["UserName"] = _model.UserName.Trim(),
+                ["Password"] = _model.Password,
+                ["ConfirmPassword"] = _model.ConfirmPassword,
+                ["ReturnUrl"] = GetSafeReturnUrl()
             };
 
-            var response = await HttpClient.PostAsJsonAsync("/account/register", request);
-
-            if (response.IsSuccessStatusCode)
-            {
-                // Redirect to login page after successful registration
-                var returnUrl = Uri.EscapeDataString(GetSafeReturnUrl());
-                NavigationManager.NavigateTo($"/login?returnUrl={returnUrl}", forceLoad: true);
-                return;
-            }
-
-            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
-            ErrorMessage = errorResponse?.Error ?? "Registration failed. Please try again.";
+            await JSRuntime.InvokeVoidAsync("submitRegisterForm", formData);
+        }
+        catch (JSException jsEx)
+        {
+            ErrorMessage = jsEx.Message?.Replace("Error: ", "") ?? "Registration failed. Please try again.";
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "Registration failed. Please try again.";
         }
         finally
         {
@@ -126,6 +123,4 @@
         [Compare(nameof(Password))]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
-
-    private record ErrorResponse(string Error);
 }

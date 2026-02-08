@@ -78,3 +78,30 @@ window.flashcardsAuth = (() => {
 
     return { postJson };
 })();
+
+window.submitLoginForm = async (formData) => {
+    // Convert RememberMe from string to boolean
+    const payload = {
+        UserName: formData.UserName,
+        Password: formData.Password,
+        RememberMe: formData.RememberMe === "True" || formData.RememberMe === "true" || formData.RememberMe === true,
+        ReturnUrl: formData.ReturnUrl
+    };
+    
+    const result = await window.flashcardsAuth.postJson("/account/login", payload);
+    if (result.ok && result.returnUrl) {
+        window.location.href = result.returnUrl;
+    } else {
+        throw new Error(result.error || "Login failed");
+    }
+};
+
+window.submitRegisterForm = async (formData) => {
+    const result = await window.flashcardsAuth.postJson("/account/register", formData);
+    if (result.ok && result.returnUrl) {
+        // Redirect to login after successful registration
+        window.location.href = "/login?returnUrl=" + encodeURIComponent(result.returnUrl);
+    } else {
+        throw new Error(result.error || "Registration failed");
+    }
+};
