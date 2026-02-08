@@ -13,6 +13,7 @@ namespace FlashcardsAI.Components.Pages;
 public partial class Home
 {
     private readonly List<Flashcard> _cards = new();
+    private List<Deck> _savedDecks = new();
 
     private string SourceText { get; set; } = string.Empty;
     private IBrowserFile? SelectedFile { get; set; }
@@ -31,6 +32,12 @@ public partial class Home
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     private IReadOnlyList<Flashcard> Cards => _cards;
+    private IReadOnlyList<Deck> SavedDecks => _savedDecks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSavedDecksAsync();
+    }
 
     private InputModeKind InputMode
     {
