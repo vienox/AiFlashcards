@@ -76,6 +76,33 @@
         </MudItem>
     </MudGrid>
 
+    @if (SavedDecks.Count > 0)
+    {
+        <MudDivider Class="section-divider" />
+
+        <div class="results-head">
+            <MudText Typo="Typo.h5">My Decks</MudText>
+            <MudText Typo="Typo.caption" Class="muted">Click a deck to start training</MudText>
+        </div>
+
+        <MudGrid Spacing="3" Class="cards-grid">
+            @foreach (var deck in SavedDecks)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudPaper Class="flashcard deck-card" Elevation="4" @onclick="() => LoadDeckAndTrain(deck)" Style="cursor: pointer; transition: transform 0.2s;">
+                        <MudText Typo="Typo.h6" Style="margin-bottom: 0.5rem;">@deck.Title</MudText>
+                        <MudText Typo="Typo.caption" Class="muted">@deck.Cards.Count cards</MudText>
+                        <MudText Typo="Typo.caption" Class="muted">Created @deck.CreatedAtUtc.ToLocalTime().ToString("MMM d, yyyy")</MudText>
+                        @if (!string.IsNullOrWhiteSpace(deck.SourceName))
+                        {
+                            <MudText Typo="Typo.caption" Class="muted" Style="margin-top: 0.25rem;">📄 @deck.SourceName</MudText>
+                        }
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+
     <MudDivider Class="section-divider" />
 
     <div class="results-head">

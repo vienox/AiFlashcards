@@ -77,10 +77,10 @@ public partial class Home
             return;
         }
 
-        var accountName = user.Identity.Name;
-        if (string.IsNullOrWhiteSpace(accountName))
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(userId))
         {
-            ErrorMessage = "Unable to determine account name.";
+            ErrorMessage = "Unable to determine user ID.";
             return;
         }
 
@@ -92,6 +92,7 @@ public partial class Home
         {
             var options = new GenerateOptions { Count = CardCount };
             List<Flashcard> result;
+            string sourceTextForTitle;
 
             if (InputMode == InputModeKind.File)
             {
@@ -115,10 +116,12 @@ public partial class Home
                         return;
                     }
 
+                    sourceTextForTitle = text;
                     result = await AiGenerator.GenerateAsync(text, options);
                 }
                 else
                 {
+                    sourceTextForTitle = Path.GetFileNameWithoutExtension(SelectedFile.Name);
                     result = await AiGenerator.GenerateFromFileAsync(SelectedFile, options);
                 }
             }
@@ -131,6 +134,7 @@ public partial class Home
                     return;
                 }
 
+                sourceTextForTitle = text;
                 result = await AiGenerator.GenerateAsync(text, options);
             }
 
@@ -138,17 +142,19 @@ public partial class Home
             _cards.AddRange(result);
             TrainingState.SetCards(_cards);
 
+            // Generate AI title
+            var deckTitle = await AiGenerator.GenerateDeckTitleAsync(sourceTextForTitle);
+
             var deck = new Deck
             {
-                Title = InputMode == InputModeKind.File && SelectedFile is not null
-                    ? Path.GetFileNameWithoutExtension(SelectedFile.Name)
-                    : "Generated deck",
+                Title = deckTitle,
                 SourceName = InputMode == InputModeKind.File ? SelectedFile?.Name : "Text input",
                 Cards = _cards.ToList()
             };
 
-            await FlashcardStore.SaveDeckAsync(accountName, deck);
-            InfoMessage = $"Generated {Cards.Count} flashcards for {accountName}.";
+            await FlashcardStore.SaveDeckAsync(userId, deck);
+            await LoadSavedDecksAsync();
+            InfoMessage = $"Generated and saved {Cards.Count} flashcards: \"{deckTitle}\".";
         }
         catch (Exception ex)
         {
@@ -196,6 +202,44 @@ public partial class Home
         }
 
         TrainingState.SetCards(_cards);
+        NavigationManager.NavigateTo("/train");
+    }
+
+    private async Task LoadSavedDecksAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            var user = authState.User;
+            if (user?.Identity is null || !user.Identity.IsAuthenticated)
+            {
+                _savedDecks.Clear();
+                return;
+            }
+
+            var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                _savedDecks.Clear();
+                return;
+            }
+
+            _savedDecks = await FlashcardStore.GetUserDecksAsync(userId);
+        }
+        catch
+        {
+            _savedDecks.Clear();
+        }
+    }
+
+    private void LoadDeckAndTrain(Deck deck)
+    {
+        if (deck?.Cards is null || deck.Cards.Count == 0)
+        {
+            return;
+        }
+
+        TrainingState.SetCards(deck.Cards);
         NavigationManager.NavigateTo("/train");
     }
 

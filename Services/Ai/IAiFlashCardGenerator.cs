@@ -14,4 +14,8 @@ public interface IAiFlashcardGenerator
         IBrowserFile file,
         GenerateOptions options,
         CancellationToken ct = default);
+
+    Task<string> GenerateDeckTitleAsync(
+        string sourceText,
+        CancellationToken ct = default);
 }
