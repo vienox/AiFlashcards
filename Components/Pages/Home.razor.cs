@@ -7,6 +7,7 @@ using FlashcardsAI.Services.Training;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Authorization;
+using MudBlazor;
 
 namespace FlashcardsAI.Components.Pages;
 
@@ -30,6 +31,7 @@ public partial class Home
     [Inject] public TrainingState TrainingState { get; set; } = default!;
     [Inject] public FlashcardStore FlashcardStore { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] public IDialogService DialogService { get; set; } = default!;
 
     private IReadOnlyList<Flashcard> Cards => _cards;
     private IReadOnlyList<Deck> SavedDecks => _savedDecks;
@@ -253,6 +255,17 @@ public partial class Home
     private async Task DeleteDeckAsync(Deck deck)
     {
         if (deck is null || IsBusy)
+        {
+            return;
+        }
+
+        var result = await DialogService.ShowMessageBox(
+            "Delete Deck",
+            $"Are you sure you want to delete \"{deck.Title}\"? This action cannot be undone.",
+            yesText: "Delete",
+            cancelText: "Cancel");
+
+        if (result != true)
         {
             return;
         }
