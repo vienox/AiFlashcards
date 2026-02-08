@@ -302,6 +302,58 @@ public sealed class OpenAiFlashcardGenerator : IAiFlashcardGenerator
         return builder.ToString();
     }
 
+    public async Task<string> GenerateDeckTitleAsync(
+        string sourceText,
+        CancellationToken ct = default)
+    {
+        var prompt = "Based on the content provided, generate a short, descriptive title (max 50 characters) for a flashcard deck. " +
+                     "Return only the title text, nothing else.";
+
+        var payload = new Dictionary<string, object?>
+        {
+            ["model"] = _model,
+            ["messages"] = new object[]
+            {
+                new Dictionary<string, string>
+                {
+                    ["role"] = "user",
+                    ["content"] = $"{prompt}\n\nContent:\n{sourceText.Substring(0, Math.Min(500, sourceText.Length))}"
+                }
+            },
+            ["max_tokens"] = 50
+        };
+
+        try
+        {
+            var response = await _http.PostAsJsonAsync("chat/completions", payload, ct);
+            response.EnsureSuccessStatusCode();
+
+            var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: ct);
+            
+            if (json.TryGetProperty("choices", out var choices) && 
+                choices.ValueKind == JsonValueKind.Array &&
+                choices.GetArrayLength() > 0)
+            {
+                var firstChoice = choices[0];
+                if (firstChoice.TryGetProperty("message", out var message) &&
+                    message.TryGetProperty("content", out var content))
+                {
+                    var title = content.GetString()?.Trim();
+                    if (!string.IsNullOrWhiteSpace(title))
+                    {
+                        return title.Length > 50 ? title.Substring(0, 50) : title;
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // If AI fails, return default
+        }
+
+        return "New Deck";
+    }
+
     private sealed class FlashcardEnvelope
     {
         [JsonPropertyName("cards")]
