@@ -78,8 +78,9 @@
             var result = await UserManager.CreateAsync(user, _model.Password);
             if (result.Succeeded)
             {
-                await SignInManager.SignInAsync(user, isPersistent: false);
-                NavigationManager.NavigateTo(GetSafeReturnUrl(), forceLoad: true);
+                // Redirect to login page after successful registration
+                var returnUrl = Uri.EscapeDataString(GetSafeReturnUrl());
+                NavigationManager.NavigateTo($"/login?returnUrl={returnUrl}", forceLoad: true);
                 return;
             }
 
