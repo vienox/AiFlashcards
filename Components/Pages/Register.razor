@@ -2,6 +2,7 @@
 @attribute [AllowAnonymous]
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Identity
+@using System.Net.Http.Json
 
 <PageTitle>Register</PageTitle>
 
@@ -53,9 +54,8 @@
     private string? ErrorMessage { get; set; }
     private bool IsBusy { get; set; }
 
-    [Inject] public UserManager<IdentityUser> UserManager { get; set; } = default!;
-    [Inject] public SignInManager<IdentityUser> SignInManager { get; set; } = default!;
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] public HttpClient HttpClient { get; set; } = default!;
     [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
 
     private async Task HandleRegisterAsync()
@@ -70,13 +70,17 @@
 
         try
         {
-            var user = new IdentityUser
+            var request = new
             {
-                UserName = _model.UserName.Trim()
+                UserName = _model.UserName.Trim(),
+                Password = _model.Password,
+                ConfirmPassword = _model.ConfirmPassword,
+                ReturnUrl = GetSafeReturnUrl()
             };
 
-            var result = await UserManager.CreateAsync(user, _model.Password);
-            if (result.Succeeded)
+            var response = await HttpClient.PostAsJsonAsync("/account/register", request);
+
+            if (response.IsSuccessStatusCode)
             {
                 // Redirect to login page after successful registration
                 var returnUrl = Uri.EscapeDataString(GetSafeReturnUrl());
@@ -84,7 +88,8 @@
                 return;
             }
 
-            ErrorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
+            var errorResponse = await response.Content.ReadFromJsonAsync<ErrorResponse>();
+            ErrorMessage = errorResponse?.Error ?? "Registration failed. Please try again.";
         }
         finally
         {
@@ -121,4 +126,6 @@
         [Compare(nameof(Password))]
         public string ConfirmPassword { get; set; } = string.Empty;
     }
+
+    private record ErrorResponse(string Error);
 }

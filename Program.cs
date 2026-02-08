@@ -1,9 +1,11 @@
 using FlashcardsAI.Components;
 using FlashcardsAI.Data;
 using FlashcardsAI.Services.Ai;
+using FlashcardsAI.Services.Auth;
 using FlashcardsAI.Services.Data;
 using FlashcardsAI.Services.TextExtraction;
 using FlashcardsAI.Services.Training;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +50,11 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<ITextExtractor, FileTextExtractor>();
 builder.Services.AddScoped<TrainingState>();
 builder.Services.AddScoped<FlashcardStore>();
+builder.Services.AddScoped(sp =>
+{
+    var navigationManager = sp.GetRequiredService<NavigationManager>();
+    return new HttpClient { BaseAddress = new Uri(navigationManager.BaseUri) };
+});
 
 var app = builder.Build();
 
