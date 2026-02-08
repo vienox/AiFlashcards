@@ -1,5 +1,6 @@
 using FlashcardsAI.Services.Training;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
 namespace FlashcardsAI.Components.Pages;
@@ -31,6 +32,48 @@ public partial class Train
             catch (JSException)
             {
             }
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (!TrainingState.HasCards || ShowingResults)
+        {
+            return;
+        }
+
+        switch (e.Key.ToLower())
+        {
+            case " ":
+            case "spacebar":
+                await FlipCardAsync();
+                break;
+            case "arrowleft":
+                if (!IsFlipped)
+                {
+                    await Previous();
+                }
+                break;
+            case "arrowright":
+                if (!IsFlipped)
+                {
+                    await Next();
+                }
+                break;
+            case "1":
+            case "y":
+                if (IsFlipped)
+                {
+                    await MarkCorrect();
+                }
+                break;
+            case "2":
+            case "n":
+                if (IsFlipped)
+                {
+                    await MarkWrong();
+                }
+                break;
         }
     }
 

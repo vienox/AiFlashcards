@@ -1,5 +1,6 @@
 @page "/"
 @attribute [Authorize]
+@using FlashcardsAI.Components.Shared
 <PageTitle>AI Flashcards</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="page-shell">
@@ -99,11 +100,16 @@
                                 <MudText Typo="Typo.caption" Class="muted" Style="margin-top: 0.25rem;">📄 @deck.SourceName</MudText>
                             }
                         </div>
-                        <MudIconButton Icon="@Icons.Material.Filled.Delete" 
-                                       Color="Color.Error" 
-                                       Size="Size.Small"
-                                       OnClick="async () => await DeleteDeckAsync(deck)"
-                                       Style="position: absolute; top: 8px; right: 8px;" />
+                        <div style="position: absolute; top: 8px; right: 8px; display: flex; gap: 4px;">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" 
+                                           Color="Color.Primary" 
+                                           Size="Size.Small"
+                                           OnClick="async () => await EditDeckTitleAsync(deck)" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                           Color="Color.Error" 
+                                           Size="Size.Small"
+                                           OnClick="async () => await DeleteDeckAsync(deck)" />
+                        </div>
                     </MudPaper>
                 </MudItem>
             }

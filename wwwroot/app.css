@@ -56,6 +56,21 @@ body {
     border-color: rgba(255, 255, 255, 0.6);
 }
 
+kbd {
+    background-color: #f4f4f4;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+    color: #333;
+    display: inline-block;
+    font-family: monospace;
+    font-size: 0.85em;
+    font-weight: 600;
+    line-height: 1;
+    padding: 2px 6px;
+    white-space: nowrap;
+}
+
 .page-shell {
     padding: 0 20px;
 }
