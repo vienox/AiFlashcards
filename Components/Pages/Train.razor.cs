@@ -106,18 +106,25 @@ public partial class Train
 
         if (!TrainingState.HasCards)
         {
-            ShowingResults = true;
+            // If there are wrong cards, automatically replay them
+            if (TrainingState.HasWrongCards)
+            {
+                TrainingState.ReplayWrongCards();
+            }
+            else
+            {
+                // All cards correct - show results
+                ShowingResults = true;
+            }
         }
-        else
+
+        try
         {
-            try
-            {
-                await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
-                await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
-            }
-            catch (JSException)
-            {
-            }
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
+        }
+        catch (JSException)
+        {
         }
     }
 
@@ -128,18 +135,25 @@ public partial class Train
 
         if (!TrainingState.HasCards)
         {
-            ShowingResults = true;
+            // If there are wrong cards, automatically replay them
+            if (TrainingState.HasWrongCards)
+            {
+                TrainingState.ReplayWrongCards();
+            }
+            else
+            {
+                // All cards correct - show results
+                ShowingResults = true;
+            }
         }
-        else
+
+        try
         {
-            try
-            {
-                await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
-                await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
-            }
-            catch (JSException)
-            {
-            }
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.reset", CardRef);
+            await JSRuntime.InvokeVoidAsync("flashcardsTraining.resize", CardRef);
+        }
+        catch (JSException)
+        {
         }
     }
 
