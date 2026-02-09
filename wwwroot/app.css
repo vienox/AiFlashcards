@@ -147,6 +147,12 @@ kbd {
     margin-top: 12px;
 }
 
+.mud-alert.mb-4 {
+    margin-bottom: 20px !important;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
 .section-divider {
     margin: 32px 0 20px;
 }

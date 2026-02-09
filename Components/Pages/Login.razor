@@ -91,16 +91,34 @@
             var message = jsEx.Message ?? "Login failed. Please try again.";
             message = message.Replace("Error: ", "");
             
-            // Remove any duplicate error text
-            var parts = message.Split(new[] { ". " }, StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length > 1 && parts[0] == parts[1])
+            // Remove stack trace (anything after " at ")
+            var atIndex = message.IndexOf(" at ");
+            if (atIndex > 0)
             {
-                ErrorMessage = parts[0] + ".";
+                message = message.Substring(0, atIndex).Trim();
             }
-            else
+            
+            // Remove duplicate sentences
+            var sentences = message.Split(new[] { ". " }, StringSplitOptions.RemoveEmptyEntries);
+            if (sentences.Length > 1)
             {
-                ErrorMessage = message;
+                // Check if first sentence is repeated
+                var uniqueSentences = new List<string>();
+                foreach (var sentence in sentences)
+                {
+                    if (!uniqueSentences.Contains(sentence))
+                    {
+                        uniqueSentences.Add(sentence);
+                    }
+                }
+                message = string.Join(". ", uniqueSentences);
+                if (!message.EndsWith("."))
+                {
+                    message += ".";
+                }
             }
+            
+            ErrorMessage = message;
         }
         catch (Exception)
         {
