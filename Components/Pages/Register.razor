@@ -11,9 +11,15 @@
         <MudText Typo="Typo.h5">Create account</MudText>
         <MudText Typo="Typo.body2" Class="muted">Create an account to save decks and flashcards.</MudText>
 
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4" Icon="@Icons.Material.Filled.Error">
+                @ErrorMessage
+            </MudAlert>
+        }
+
         <EditForm Model="_model" OnValidSubmit="HandleRegisterAsync">
             <DataAnnotationsValidator />
-            <ValidationSummary />
 
             <MudTextField Label="Username"
                           @bind-Value="_model.UserName"
@@ -39,13 +45,6 @@
                 </MudButton>
             </div>
         </EditForm>
-
-        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-        {
-            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="alert-gap">
-                @ErrorMessage
-            </MudAlert>
-        }
     </MudPaper>
 </MudContainer>
 
@@ -82,7 +81,20 @@
         }
         catch (JSException jsEx)
         {
-            ErrorMessage = jsEx.Message?.Replace("Error: ", "") ?? "Registration failed. Please try again.";
+            // Extract clean error message from JS exception
+            var message = jsEx.Message ?? "Registration failed. Please try again.";
+            message = message.Replace("Error: ", "");
+            
+            // Remove any duplicate error text
+            var parts = message.Split(new[] { ". " }, StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length > 1 && parts[0] == parts[1])
+            {
+                ErrorMessage = parts[0] + ".";
+            }
+            else
+            {
+                ErrorMessage = message;
+            }
         }
         catch (Exception)
         {
