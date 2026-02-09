@@ -2,6 +2,8 @@
 
 An intelligent flashcard application that uses AI to automatically generate flashcards from text or PDF documents. Built with Blazor Server and OpenAI, this app helps you create and study flashcards effortlessly.
 
+![FlashcardsAI Demo](ezgif-3f854450fd2f42ec.gif)
+
 ## ✨ Features
 
 ### 🤖 AI-Powered Generation
