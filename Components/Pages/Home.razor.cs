@@ -4,6 +4,7 @@ using FlashcardsAI.Services.Ai;
 using FlashcardsAI.Services.Data;
 using FlashcardsAI.Services.TextExtraction;
 using FlashcardsAI.Services.Training;
+using FlashcardsAI.Components.Shared;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Authorization;

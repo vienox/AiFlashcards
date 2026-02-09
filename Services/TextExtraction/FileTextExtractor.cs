@@ -28,11 +28,11 @@ public sealed class FileTextExtractor : ITextExtractor
         }
         catch (IOException ex)
         {
-            return new TextExtractionResult(string.Empty, $"Unable to read file: {ex.Message}");
+            return new TextExtractionResult(string.Empty, $"Couldn't read file: {ex.Message}");
         }
         catch (Exception ex)
         {
-            return new TextExtractionResult(string.Empty, $"Processing error: {ex.Message}");
+            return new TextExtractionResult(string.Empty, $"Error during processing: {ex.Message}");
         }
     }
 

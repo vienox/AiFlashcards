@@ -15,7 +15,7 @@
 </MudDialog>
 
 @code {
-    [CascadingParameter] MudBlazor.IDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] MudBlazor.IDialogReference MudDialog { get; set; } = default!;
 
     [Parameter] public string Title { get; set; } = "Edit";
     [Parameter] public string Text { get; set; } = string.Empty;
@@ -35,6 +35,6 @@
 
     private void Cancel()
     {
-        MudDialog.Cancel();
+        MudDialog.Close(DialogResult.Cancel());
     }
 }
