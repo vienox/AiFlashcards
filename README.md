@@ -16,6 +16,7 @@ An intelligent flashcard application that uses AI to automatically generate flas
 - Create and organize flashcards into decks
 - Save decks to your personal library
 - Edit deck names and manage collections
+- Search and sort decks by name or creation date
 - Track source documents for each deck
 
 ### 🎯 Interactive Training Mode
