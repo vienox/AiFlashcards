@@ -77,13 +77,25 @@
         </MudItem>
     </MudGrid>
 
-    @if (VisibleDecks.Count > 0)
+    @if (SavedDecks.Count > 0)
     {
         <MudDivider Class="section-divider" />
 
         <div class="results-head">
-            <MudText Typo="Typo.h5">My Decks</MudText>
-            <MudText Typo="Typo.caption" Class="muted">Click a deck to start training</MudText>
+            <div>
+                <MudText Typo="Typo.h5">My Decks</MudText>
+                <MudText Typo="Typo.caption" Class="muted">Click a deck to start training</MudText>
+            </div>
+            <MudTextField T="string"
+                          @bind-Value="DeckFilter"
+                          Placeholder="Search decks"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          DebounceInterval="200"
+                          Class="deck-filter" />
         </div>
 
         <MudGrid Spacing="3" Class="cards-grid">

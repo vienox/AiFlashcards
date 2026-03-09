@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using FlashcardsAI.Models;
 using FlashcardsAI.Services.Ai;
 using FlashcardsAI.Services.Data;
@@ -24,6 +25,7 @@ public partial class Home
     private string? ErrorMessage { get; set; }
     private string? InfoMessage { get; set; }
     private InputModeKind _inputMode = InputModeKind.Text;
+    private string DeckFilter { get; set; } = string.Empty;
 
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -36,7 +38,12 @@ public partial class Home
 
     private IReadOnlyList<Flashcard> Cards => _cards;
     private IReadOnlyList<Deck> SavedDecks => _savedDecks;
-    private IReadOnlyList<Deck> VisibleDecks => _savedDecks;
+    private IReadOnlyList<Deck> VisibleDecks =>
+        string.IsNullOrWhiteSpace(DeckFilter)
+            ? _savedDecks
+            : _savedDecks
+                .Where(deck => DeckMatchesFilter(deck, DeckFilter))
+                .ToList();
 
     protected override async Task OnInitializedAsync()
     {
@@ -349,6 +356,23 @@ public partial class Home
         {
             ErrorMessage = "Failed to update deck name.";
         }
+    }
+
+    private static bool DeckMatchesFilter(Deck deck, string filter)
+    {
+        if (string.IsNullOrWhiteSpace(filter))
+        {
+            return true;
+        }
+
+        var term = filter.Trim();
+        if (term.Length == 0)
+        {
+            return true;
+        }
+
+        return (deck.Title?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false)
+            || (deck.SourceName?.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false);
     }
 
     private static string FormatBytes(long bytes)
