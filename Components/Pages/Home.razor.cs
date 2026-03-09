@@ -62,6 +62,8 @@ public partial class Home
         }
     }
 
+    private int VisibleDeckCount => VisibleDecks.Count;
+
     protected override async Task OnInitializedAsync()
     {
         await LoadSavedDecksAsync();
