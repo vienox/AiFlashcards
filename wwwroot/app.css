@@ -169,6 +169,16 @@ kbd {
     min-width: 220px;
 }
 
+.deck-tools {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.deck-sort {
+    min-width: 160px;
+}
+
 .muted {
     color: var(--muted);
 }
@@ -211,6 +221,16 @@ kbd {
     }
 
     .deck-filter {
+        width: 100%;
+    }
+
+    .deck-tools {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .deck-sort {
         width: 100%;
     }
 }

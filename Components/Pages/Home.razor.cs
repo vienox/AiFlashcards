@@ -26,6 +26,7 @@ public partial class Home
     private string? InfoMessage { get; set; }
     private InputModeKind _inputMode = InputModeKind.Text;
     private string DeckFilter { get; set; } = string.Empty;
+    private DeckSortKind DeckSort { get; set; } = DeckSortKind.Newest;
 
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
 
@@ -38,12 +39,28 @@ public partial class Home
 
     private IReadOnlyList<Flashcard> Cards => _cards;
     private IReadOnlyList<Deck> SavedDecks => _savedDecks;
-    private IReadOnlyList<Deck> VisibleDecks =>
-        string.IsNullOrWhiteSpace(DeckFilter)
-            ? _savedDecks
-            : _savedDecks
-                .Where(deck => DeckMatchesFilter(deck, DeckFilter))
-                .ToList();
+    private IReadOnlyList<Deck> VisibleDecks
+    {
+        get
+        {
+            IEnumerable<Deck> query = _savedDecks;
+
+            if (!string.IsNullOrWhiteSpace(DeckFilter))
+            {
+                query = query.Where(deck => DeckMatchesFilter(deck, DeckFilter));
+            }
+
+            query = DeckSort switch
+            {
+                DeckSortKind.Oldest => query.OrderBy(deck => deck.CreatedAtUtc),
+                DeckSortKind.NameAsc => query.OrderBy(deck => deck.Title),
+                DeckSortKind.NameDesc => query.OrderByDescending(deck => deck.Title),
+                _ => query.OrderByDescending(deck => deck.CreatedAtUtc)
+            };
+
+            return query.ToList();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -394,5 +411,13 @@ public partial class Home
     {
         Text,
         File
+    }
+
+    private enum DeckSortKind
+    {
+        Newest,
+        Oldest,
+        NameAsc,
+        NameDesc
     }
 }

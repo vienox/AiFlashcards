@@ -86,16 +86,29 @@
                 <MudText Typo="Typo.h5">My Decks</MudText>
                 <MudText Typo="Typo.caption" Class="muted">Click a deck to start training</MudText>
             </div>
-            <MudTextField T="string"
-                          @bind-Value="DeckFilter"
-                          Placeholder="Search decks"
-                          Variant="Variant.Outlined"
-                          Margin="Margin.Dense"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Search"
-                          Immediate="true"
-                          DebounceInterval="200"
-                          Class="deck-filter" />
+            <div class="deck-tools">
+                <MudTextField T="string"
+                              @bind-Value="DeckFilter"
+                              Placeholder="Search decks"
+                              Variant="Variant.Outlined"
+                              Margin="Margin.Dense"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              Immediate="true"
+                              DebounceInterval="200"
+                              Class="deck-filter" />
+                <MudSelect T="DeckSortKind"
+                           Label="Sort"
+                           @bind-Value="DeckSort"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           Class="deck-sort">
+                    <MudSelectItem Value="DeckSortKind.Newest">Newest</MudSelectItem>
+                    <MudSelectItem Value="DeckSortKind.Oldest">Oldest</MudSelectItem>
+                    <MudSelectItem Value="DeckSortKind.NameAsc">Name A-Z</MudSelectItem>
+                    <MudSelectItem Value="DeckSortKind.NameDesc">Name Z-A</MudSelectItem>
+                </MudSelect>
+            </div>
         </div>
 
         <MudGrid Spacing="3" Class="cards-grid">
