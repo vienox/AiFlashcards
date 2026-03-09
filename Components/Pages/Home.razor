@@ -77,7 +77,7 @@
         </MudItem>
     </MudGrid>
 
-    @if (SavedDecks.Count > 0)
+    @if (VisibleDecks.Count > 0)
     {
         <MudDivider Class="section-divider" />
 
@@ -87,7 +87,7 @@
         </div>
 
         <MudGrid Spacing="3" Class="cards-grid">
-            @foreach (var deck in SavedDecks)
+            @foreach (var deck in VisibleDecks)
             {
                 <MudItem xs="12" sm="6" md="4">
                     <MudPaper Class="flashcard deck-card" Elevation="4" Style="cursor: pointer; transition: transform 0.2s; position: relative;">

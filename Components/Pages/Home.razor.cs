@@ -36,6 +36,7 @@ public partial class Home
 
     private IReadOnlyList<Flashcard> Cards => _cards;
     private IReadOnlyList<Deck> SavedDecks => _savedDecks;
+    private IReadOnlyList<Deck> VisibleDecks => _savedDecks;
 
     protected override async Task OnInitializedAsync()
     {
